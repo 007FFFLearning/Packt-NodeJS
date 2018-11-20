@@ -1,4 +1,4 @@
-## This is a sample Todo List App in Node.JS, used in the Packt Node.JS on Azure course.
+## Todo List.
 
 Build a todo list with NodeJs, VueJs & MonogDB
 
