@@ -1,0 +1,7 @@
+{
+    "appService.zipIgnorePattern": [
+        "node_modules{,/**}"
+    ],
+    "appService.defaultWebAppToDeploy": "/subscriptions/0a407898-c077-442d-8e17-71420aa82426/resourceGroups/appsvc_rg_linux_centralus/providers/Microsoft.Web/sites/newtodowebapp",
+    "appService.deploySubpath": ""
+}

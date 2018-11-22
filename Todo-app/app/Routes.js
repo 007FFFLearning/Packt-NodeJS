@@ -1,73 +1,57 @@
-'use strict'
+var Todo = require('./models/todo');
 
-var express = require('express')
+function getTodos(res) {
+    Todo.find(function (err, todos) {
 
-var todoRoutes = express.Router()
-
-var Todo = require('./Todo')
-
-// get all todo items in the db
-
-todoRoutes.route('/all').get(function (req, res, next) {
-  Todo.find(function (err, todos) {
-    if (err) {
-      return next(new Error(err))
-    }
-
-    res.json(todos) // return all todos
-  })
-})
-
-// add a todo item
-todoRoutes.route('/add').post(function (req, res) {
-  Todo.create(
-    {
-      name: req.body.name,
-      done: false
-    },
-    function (error, todo) {
-      if (error) {
-        res.status(400).send('Unable to create todo list')
-      }
-      res.status(200).json(todo)
-    }
-  )
-})
-
-// delete a todo item
-
-todoRoutes.route('/delete/:id').get(function (req, res, next) {
-  var id = req.params.id
-  Todo.findByIdAndRemove(id, function (err, todo) {
-    if (err) {
-      return next(new Error('Todo was not found'))
-    }
-    res.json('Successfully removed')
-  })
-})
-
-// update a todo item
-
-todoRoutes.route('/update/:id').post(function (req, res, next) {
-  var id = req.params.id
-  Todo.findById(id, function (error, todo) {
-    if (error) {
-      return next(new Error('Todo was not found'))
-    } else {
-      todo.name = req.body.name
-      todo.done = req.body.done
-
-      todo.save({
-        function (error, todo) {
-          if (error) {
-            res.status(400).send('Unable to update todo')
-          } else {
-            res.status(200).json(todo)
-          }
+        // if there is an error retrieving, send the error. nothing after res.send(err) will execute
+        if (err) {
+            res.send(err);
         }
-      })
-    }
-  })
-})
 
-module.exports = todoRoutes
+        res.json(todos); // return all todos in JSON format
+    });
+};
+
+module.exports = function (app) {
+
+    // api ---------------------------------------------------------------------
+    // get all todos
+    app.get('/api/todos', function (req, res) {
+        // use mongoose to get all todos in the database
+        getTodos(res);
+    });
+
+    // create todo and send back all todos after creation
+    app.post('/api/todos', function (req, res) {
+
+        // create a todo, information comes from AJAX request from Angular
+        Todo.create({
+            text: req.body.text,
+            done: false
+        }, function (err, todo) {
+            if (err)
+                res.send(err);
+
+            // get and return all the todos after you create another
+            getTodos(res);
+        });
+
+    });
+
+    // delete a todo
+    app.delete('/api/todos/:todo_id', function (req, res) {
+        Todo.remove({
+            _id: req.params.todo_id
+        }, function (err, todo) {
+            if (err)
+                res.send(err);
+
+            getTodos(res);
+        });
+    });
+
+    // application -------------------------------------------------------------
+    app.get('*', function (req, res) {
+        res.sendFile(__dirname + '/public/index.html'); // load the single view file (angular will handle the page changes on the front-end)
+    });
+};
